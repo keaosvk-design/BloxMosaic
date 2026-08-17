@@ -27,14 +27,27 @@ internal sealed class WindowsHandleCloser
     private const int MaximumNameBufferBytes = 1 * 1024 * 1024;
 
     private readonly string _processName;
-    private readonly string _targetObjectName;
+    private readonly string[] _targetObjectNames;
 
-    public WindowsHandleCloser(string processName, string targetObjectName)
+    public WindowsHandleCloser(string processName, params string[] targetObjectNames)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(processName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetObjectName);
+        ArgumentNullException.ThrowIfNull(targetObjectNames);
+
+        if (targetObjectNames.Length == 0)
+        {
+            throw new ArgumentException(
+                "At least one target object name is required.",
+                nameof(targetObjectNames));
+        }
+
+        foreach (string targetObjectName in targetObjectNames)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetObjectName);
+        }
+
         _processName = processName;
-        _targetObjectName = targetObjectName;
+        _targetObjectNames = targetObjectNames.ToArray();
     }
 
     public Task<HandleCloseResult> CloseMatchingHandlesAsync(CancellationToken cancellationToken) =>
@@ -56,6 +69,21 @@ internal sealed class WindowsHandleCloser
             || objectName.EndsWith(
                 $"\\{targetObjectName}",
                 StringComparison.Ordinal);
+    }
+
+    internal static bool IsTargetObjectName(
+        string? objectName,
+        string[] targetObjectNames)
+    {
+        foreach (string targetObjectName in targetObjectNames)
+        {
+            if (IsTargetObjectName(objectName, targetObjectName))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private HandleCloseResult CloseMatchingHandles(CancellationToken cancellationToken)
@@ -277,7 +305,7 @@ internal sealed class WindowsHandleCloser
                 using (duplicate)
                 {
                     string? objectName = TryGetObjectName(duplicate);
-                    if (!IsTargetObjectName(objectName, _targetObjectName))
+                    if (!IsTargetObjectName(objectName, _targetObjectNames))
                     {
                         continue;
                     }
