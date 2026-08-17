@@ -35,7 +35,7 @@ dotnet --info
 dotnet --list-sdks
 ```
 
-The SDK list must contain .NET `10.0.400` or a newer stable .NET 10 feature band.
+The SDK list must contain .NET `10.0.100` or a newer stable .NET 10 feature band.
 
 ### 2. Clone
 

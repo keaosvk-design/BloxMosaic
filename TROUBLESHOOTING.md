@@ -21,7 +21,7 @@ Check installed SDKs:
 dotnet --list-sdks
 ```
 
-This repository's `global.json` requires SDK 10.0.400 or a newer stable .NET 10
+This repository's `global.json` requires SDK 10.0.100 or a newer stable .NET 10
 feature band. Update CachyOS fully if that SDK is missing.
 
 ## `NU1301` or NuGet restore failure

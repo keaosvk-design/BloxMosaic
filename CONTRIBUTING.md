@@ -2,7 +2,7 @@
 
 ## Development setup
 
-Use .NET SDK 10.0.400 or a newer stable .NET 10 feature band.
+Use .NET SDK 10.0.100 or a newer stable .NET 10 feature band.
 
 ```bash
 git clone https://github.com/Zgoly/MultiBloxy.git
