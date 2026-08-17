@@ -1,90 +1,207 @@
+# MultiBloxy
+
+MultiBloxy is a small 64-bit Windows tray application that coordinates the
+`ROBLOX_singletonEvent` named object used by the Roblox client. Its goal is to
+allow multiple unmodified Roblox client processes to coexist and to provide
+simple pause, retry, launch, and process-management controls.
+
 > [!IMPORTANT]
-> Roblox is actively blocking multi-instance tools - MultiBloxy may not work for you.
+> Roblox actively changes its client and may block multi-instance tools.
+> MultiBloxy is not guaranteed to work with the current client. The project also
+> cannot guarantee that every use is acceptable under current Roblox rules. Read
+> the [security and compatibility notice](SECURITY.md) before running it.
 
-# MultiBloxy 🎮🔓
+## Project status
 
-<img align="right" src="https://raw.githubusercontent.com/Zgoly/MultiBloxy/refs/heads/main/MultiBloxy/Resources/MultiBloxy.ico" />
+The `2.x` codebase is a modernization of the original .NET Framework utility:
 
-MultiBloxy is a Windows system tray icon application designed to manage and control multiple Roblox instances. It provides a convenient way to open multiple instances for different accounts and offers a variety of options to manage them efficiently.
+- .NET 10 LTS and Windows Forms;
+- explicit Windows x64 target;
+- bounded, x64-correct native handle inspection;
+- no recursive retries or remembered destructive actions;
+- per-user atomic settings and local diagnostic logs;
+- core unit tests and Windows integration tests;
+- automated Windows build and release workflows.
 
-[![License][shield-repo-license]][repo-license]
-[![Downloads][shield-repo-releases]][repo-releases]
-[![Version][shield-repo-latest]][repo-latest]
-[![Stars][shield-repo-stargazers]][repo-stargazers]
-[![Issues][shield-repo-issues]][repo-issues]
-[![Pulls][shield-repo-pulls]][repo-pulls]
-[![Forks][shield-repo-forks]][repo-forks]
+Runtime compatibility with Roblox still requires a manual test on Windows. CI
+can verify MultiBloxy itself, but cannot safely automate a live Roblox session.
 
-<a href="https://dsc.gg/zgoly">
-  <img alt="Discord" src="https://invidget.switchblade.xyz/y8fBWPNJFm">
-</a>
+## Features
 
-## Key Features 🌟
-- No installation needed with a single file executable.
-- Runs in the background with quick access via a system tray icon.
-- Supports multiple languages.
-- Easily pause and resume mutex with advanced control.
-- Shows actions if Roblox is already open and can remember your choice.
-- Uses about 3 MB of RAM and 0% CPU.
-- Configurable settings saved in the same folder as the .exe file.
-- Works with both Bloxstrap and the original bootstrapper.
+- Lightweight Windows notification-area application.
+- Pause, resume, and reload the Roblox guard.
+- Start Roblox through the registered `roblox-player:` handler.
+- Request a normal close of all Roblox processes, with confirmation and a
+  bounded forced-close fallback.
+- Optional advanced recovery that closes only an exactly matching named handle.
+- English and Russian interface.
+- Settings migration from the legacy portable `config.xml`.
+- No account storage, HTTP client, telemetry, updater, or administrator requirement.
 
-## Getting Started 🚀
-1. Download the `MultiBloxy.exe` from the [latest release](https://github.com/Zgoly/MultiBloxy/releases/latest).
-2. To ensure MultiBloxy starts automatically with Windows, click <kbd>Win</kbd> + <kbd>R</kbd>, run the path `%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\StartUp`, and drop the `MultiBloxy.exe` file here.
-3. Launch `MultiBloxy.exe`.
-### For more detailed instructions see [GETTING_STARTED.md](https://github.com/Zgoly/MultiBloxy/blob/main/GETTING_STARTED.md)
+## Requirements
 
-## How It Works ⚙️
-Roblox uses a singleton mutex named `ROBLOX_singletonEvent` to ensure that only one instance of the game is running at a time. MultiBloxy creates this mutex before Roblox does, allowing you to run as many instances of Roblox as you want.
+To run the application:
 
-## Is This a Virus? 🛡️
-MultiBloxy is completely safe and not a virus. If you encounter a "Windows Protected Your PC" message, it appears because the application is unsigned, and obtaining a certificate can be costly. You can safely ignore it and run the program anyway. Here's how:
+- a supported 64-bit Windows version;
+- an installed, unmodified Roblox client;
+- standard user permissions.
 
-1. **Click on "More info"** in the warning message.
-2. **Click on "Run anyway"** to proceed with running MultiBloxy.
+MultiBloxy is not a Linux or macOS application. CachyOS can build and publish the
+Windows executable, but cannot run or validate its Windows/Roblox integration.
 
-For those who are still skeptical, you can compile the program yourself using [Visual Studio Community](https://visualstudio.microsoft.com/vs/). Alternatively, you can decompile the current executable file to ensure that it is completely safe.
+## Download and run
 
-## Is This Bannable? 🚫
-MultiBloxy is not bannable as long as you do not break Roblox's rules. The tool is designed to help running multiple Roblox instances and does not interfere with the game's mechanics or provide any unfair advantages. Always ensure that your usage complies with Roblox's terms of service.
+1. Open the repository's **Releases** page.
+2. Download `MultiBloxy.exe` and `MultiBloxy.exe.sha256`, or the
+   `MultiBloxy-<version>-win-x64.zip` archive.
+3. Verify the SHA-256 value as described in [Getting Started](GETTING_STARTED.md).
+4. Run `MultiBloxy.exe` as a normal user.
+5. Use the MultiBloxy icon in the Windows notification area.
 
-## Contributing 🤝
-Contributions are welcome! If you have any suggestions, bug reports, or feature requests, please [open an issue](https://github.com/Zgoly/MultiBloxy/issues) or [submit a pull request](https://github.com/Zgoly/MultiBloxy/pulls).
+Do not disable security software or automatically bypass a SmartScreen warning.
+An unsigned build has no verified publisher. Prefer a release produced by the
+repository workflow, compare its checksum, and compile from source when unsure.
 
-If you want to contribute to localization, you can add new translations or improve existing ones. The localization code is located in the [Localization.cs](https://github.com/Zgoly/MultiBloxy/blob/main/MultiBloxy/Localization.cs) file. Feel free to add new languages or correct any mistakes.
+## Configuration and logs
 
-## Join Our Discord Server 💬
-For faster responses to your issues, problems, and other inquiries, join [our Discord server](https://dsc.gg/zgoly):
+MultiBloxy writes only per-user local files:
 
-<a href="https://dsc.gg/zgoly">
-  <img alt="Discord" src="https://invidget.switchblade.xyz/y8fBWPNJFm">
-</a>
+```text
+Settings: %LOCALAPPDATA%\MultiBloxy\config.xml
+Logs:     %LOCALAPPDATA%\MultiBloxy\logs\MultiBloxy.log
+```
 
-## License 📜
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+On first launch, a valid legacy `config.xml` next to the executable is copied to
+the new settings location. The legacy file is not deleted. A malformed current
+config is quarantined as `config.corrupt-<timestamp>-<id>.xml`, and safe defaults
+are used.
 
----
+The program does not store Roblox usernames, passwords, cookies, or tokens.
 
-Thank you for using MultiBloxy! 😊
+## Build on CachyOS / Arch Linux
 
-[shield-repo-license]: https://img.shields.io/github/license/Zgoly/MultiBloxy?style=flat&labelColor=c80064&color=c80064
-[repo-license]: https://github.com/Zgoly/MultiBloxy/blob/main/LICENSE
+Update the system and install the tools:
 
-[shield-repo-releases]: https://img.shields.io/github/downloads/Zgoly/MultiBloxy/total?style=flat&labelColor=007ec6&color=007ec6
-[repo-releases]: https://github.com/Zgoly/MultiBloxy/releases
+```bash
+sudo pacman -Syu
+sudo pacman -S --needed git dotnet-sdk-10.0
+```
 
-[shield-repo-latest]: https://img.shields.io/github/v/release/Zgoly/MultiBloxy?style=flat&labelColor=4c1&color=4c1
-[repo-latest]: https://github.com/Zgoly/MultiBloxy/releases/latest
+Clone and build from the repository root:
 
-[shield-repo-stargazers]: https://img.shields.io/github/stars/Zgoly/MultiBloxy?style=flat&labelColor=ffd700&color=ffd700
-[repo-stargazers]: https://github.com/Zgoly/MultiBloxy/stargazers
+```bash
+git clone https://github.com/Zgoly/MultiBloxy.git
+cd MultiBloxy
+dotnet restore MultiBloxy.sln
+dotnet build MultiBloxy.sln --configuration Release --no-restore
+```
 
-[shield-repo-issues]: https://img.shields.io/github/issues/Zgoly/MultiBloxy?style=flat&labelColor=ff4500&color=ff4500
-[repo-issues]: https://github.com/Zgoly/MultiBloxy/issues
+Run the cross-platform core tests:
 
-[shield-repo-pulls]: https://img.shields.io/github/issues-pr/Zgoly/MultiBloxy?style=flat&labelColor=8a2be2&color=8a2be2
-[repo-pulls]: https://github.com/Zgoly/MultiBloxy/pulls
+```bash
+dotnet test tests/MultiBloxy.Core.Tests/MultiBloxy.Core.Tests.csproj --configuration Release
+```
 
-[shield-repo-forks]: https://img.shields.io/github/forks/Zgoly/MultiBloxy?style=flat&labelColor=00008b&color=00008b
-[repo-forks]: https://github.com/Zgoly/MultiBloxy/network/members
+Create a self-contained Windows executable from CachyOS:
+
+```bash
+bash scripts/publish-windows.sh
+```
+
+Result:
+
+```text
+dist/windows-x64/MultiBloxy.exe
+dist/windows-x64/MultiBloxy.exe.sha256
+dist/windows-x64/release-manifest.json
+```
+
+The cross-published executable must still be tested on Windows. See the complete
+[build guide](BUILDING.md).
+
+## Build and run on Windows
+
+From PowerShell in the repository root:
+
+```powershell
+dotnet restore MultiBloxy.sln
+dotnet build MultiBloxy.sln --configuration Debug --no-restore
+dotnet test MultiBloxy.sln --configuration Debug --no-build
+dotnet run --project MultiBloxy/MultiBloxy.csproj --configuration Debug
+```
+
+For a portable release:
+
+```powershell
+dotnet publish MultiBloxy/MultiBloxy.csproj `
+  --configuration Release `
+  --runtime win-x64 `
+  --self-contained true
+```
+
+The default publish result is under:
+
+```text
+MultiBloxy\bin\Release\net10.0-windows\win-x64\publish\MultiBloxy.exe
+```
+
+## Tests
+
+The solution contains two test projects:
+
+- `MultiBloxy.Core.Tests` runs on Linux and Windows and tests settings,
+  migration, unsafe XML rejection, recovery policy, and localization.
+- `MultiBloxy.Windows.Tests` runs only on 64-bit Windows and checks the native
+  layout, exact name matching, and a GUID-named test Event inside the test process.
+
+Commands:
+
+```bash
+dotnet test tests/MultiBloxy.Core.Tests/MultiBloxy.Core.Tests.csproj -c Release
+```
+
+```powershell
+dotnet test MultiBloxy.sln -c Release
+```
+
+See [the test matrix](docs/TEST-MATRIX.md) for the manual Roblox checks that CI
+cannot perform.
+
+## Repository structure
+
+```text
+MultiBloxy.Core/              platform-neutral settings and localization
+MultiBloxy/                   Windows Forms application and Windows services
+tests/MultiBloxy.Core.Tests/  Linux/Windows unit tests
+tests/MultiBloxy.Windows.Tests/ Windows native integration tests
+scripts/                      reproducible build/test/publish commands
+.github/workflows/            CI, CodeQL, and Windows release automation
+docs/                         baseline, architecture, and release notes
+```
+
+## Windows `.exe` and releases
+
+The preferred release method is `.github/workflows/release.yml` on a real GitHub
+Windows runner. A tag such as `v2.0.0` builds and tests the solution, publishes a
+self-contained single-file `MultiBloxy.exe`, computes SHA-256, records the source
+commit in `release-manifest.json`, creates a ZIP, and attaches the artifacts to a
+GitHub Release.
+
+The executable is portable. It is not a `Setup.exe` installer: it does not write
+registry installation records, add an uninstaller, or configure startup.
+
+## Development
+
+- Read [BUILDING.md](BUILDING.md) for setup and release commands.
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before changing native code.
+- Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md) when a command fails.
+- Read [SECURITY.md](SECURITY.md) for the threat model and reporting process.
+- Architecture is documented in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+Changes that add client modification, code injection, a kernel driver, privilege
+escalation, anti-cheat evasion, credential handling, or hidden destructive behavior
+are outside this project's scope.
+
+## License
+
+MultiBloxy is licensed under the [MIT License](LICENSE).

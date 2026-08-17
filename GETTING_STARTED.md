@@ -1,165 +1,105 @@
-# Getting Started with MultiBloxy 🎮🔓
+# Getting started with MultiBloxy
 
-## Download ⬇️
-[Download MultiBloxy.exe (direct link) 🔗](https://github.com/Zgoly/MultiBloxy/releases/latest/download/MultiBloxy.exe)
+## Before you run it
 
-## Run 🚀
-MultiBloxy is portable, so you can run it right away. However, it's a good idea to add it to the `StartUp` folder so that Windows automatically opens it when you start your PC.
+MultiBloxy is a portable Windows x64 application. It changes how the Roblox
+client coordinates multiple processes. Roblox may block this behavior, and the
+project cannot promise that it works with every current client version or that
+every use complies with Roblox rules.
 
-To do that, follow these steps:
-1. **Open the Run Dialog**:
-   - Press the <kbd>Win</kbd> key (the Windows key) and the <kbd>R</kbd> key simultaneously. This will open the Run dialog box.
+MultiBloxy does not need administrator rights. Do not run it as administrator as
+a workaround for a normal error.
 
-2. **Navigate to the Startup Folder**:
-   - In the Run dialog box, paste the following path: `%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\StartUp`.
-   - Click on `OK` to open the Startup folder.
+## Download and verify a release
 
-3. **Add MultiBloxy to the Startup Folder**:
-   - Locate the `MultiBloxy.exe` file that you have downloaded.
-   - Drag and drop the `MultiBloxy.exe` file into the Startup folder that you opened in the previous step.
+Download these files from the same GitHub Release:
 
-4. **Launch MultiBloxy**:
-   - You can now launch MultiBloxy by double-clicking the `MultiBloxy.exe` file in the Startup folder.
-   - Alternatively, you can restart your PC to ensure that MultiBloxy starts automatically the next time you log in.
+```text
+MultiBloxy.exe
+MultiBloxy.exe.sha256
+```
 
-By following these steps, you will ensure that MultiBloxy is set to run automatically whenever you start your computer.
+Open PowerShell in the download directory and run:
 
----
+```powershell
+Get-FileHash .\MultiBloxy.exe -Algorithm SHA256
+Get-Content .\MultiBloxy.exe.sha256
+```
 
-## How to Use ℹ️
+The long hexadecimal values must be identical, ignoring letter case. If they are
+different, delete the downloaded file and do not run it.
 
-### Method №1: Browser with Multiple Profiles (Recommended) 🌐
-> [!NOTE]
-> These instructions assume you have already downloaded, installed, and configured your browser.
+An unsigned executable can trigger SmartScreen because Windows cannot identify a
+verified publisher. A checksum proves that the file matches the release artifact;
+it does not replace code signing or guarantee that a program is harmless. Build
+from source when you cannot establish trust.
 
-#### Google Chrome:
-1. **Access Profile Settings**:
-   - Click on your avatar in the top right corner of the browser window, near the three vertical dots (⋮).
+## First launch
 
-2. **Add a New Profile**:
-   - In the "Profiles" section that appears, click on the `Add` button.
+1. Double-click `MultiBloxy.exe` on Windows.
+2. Look for its icon in the notification area near the clock. Windows may place
+   it in the hidden-icons menu.
+3. Right-click the icon to open the menu.
+4. Confirm that the status is either `Running`, `Paused`, or `Error`.
 
-3. **Set Up the New Profile**:
-   - In the window that opens, select the option `Continue without an account`.
+`Running` means that MultiBloxy owns the named guard object. It does not guarantee
+that the current Roblox version permits multiple live sessions.
 
-4. **Name the Profile**:
-   - Enter a name for the new profile (you can choose any name you prefer) and click on `Done` to complete the setup.
+## Tray controls
 
-#### Microsoft Edge:
-1. **Access Profile Settings**:
-   - Click on your avatar in the upper left corner of the browser window.
+- **Pause / Resume** releases or recreates the guard.
+- **Reload guard** performs one controlled disable/enable cycle.
+- **Start new Roblox instance** opens the registered `roblox-player:` URI.
+- **Stop all Roblox instances…** always asks for confirmation. It requests a
+  normal close first and forces termination only for processes that remain open.
+- **Open logs folder** opens local diagnostic logs.
+- **Pause on launch** starts MultiBloxy without enabling its guard.
+- **Reset remembered choice** clears the only rememberable recovery choice.
 
-2. **Set Up a New Profile**:
-   - Click on `Set up new personal profile` to initiate the creation of a new profile.
+When guard creation fails, MultiBloxy offers exactly one recovery action. It does
+not recursively reopen the dialog. Handle repair and process termination are
+never stored for automatic execution; only continuing with the guard disabled can
+be remembered.
 
-Now you have two profiles. In your main profile, you are likely logged into your roblox.com account. Log into your other roblox.com account in the profile you just created.
+## Start MultiBloxy with Windows
 
-**Done!** 🎉
+Use the current user's Startup folder rather than the all-users system folder:
 
-While MultiBloxy is running, you can launch any experiences by switching between browser windows and play without any problems. You can repeat these steps to create more profiles and launch more Roblox instances.
+1. Keep `MultiBloxy.exe` in a stable directory, for example
+   `%LOCALAPPDATA%\Programs\MultiBloxy`.
+2. Press <kbd>Win</kbd>+<kbd>R</kbd>.
+3. Enter `shell:startup` and press Enter.
+4. Right-drag `MultiBloxy.exe` into the folder and choose **Create shortcuts here**.
 
----
+Create a shortcut, not a second copy of the executable. MultiBloxy does not modify
+Windows startup automatically.
 
-### Method №2: Roblox `Switch Accounts` Feature 🔄
-> [!NOTE]
-> With this method, you can add up to 5 accounts.
+## Configuration, logs, and reset
 
-1. **Open Roblox**:
-   - Navigate to [roblox.com](https://roblox.com/).
+```text
+%LOCALAPPDATA%\MultiBloxy\config.xml
+%LOCALAPPDATA%\MultiBloxy\logs\MultiBloxy.log
+```
 
-2. **Access Account Settings**:
-   - Click on the gear icon ⚙️ located in the top right corner of the page.
+If config is malformed, MultiBloxy moves it aside and starts with defaults.
 
-3. **Initiate Account Switching**:
-   - In the dropdown menu, click on `Switch Accounts`.
+To reset all local data:
 
-4. **Add a New Account**:
-   - In the modal window that appears, click on `Add Account`.
+1. Exit MultiBloxy from its tray menu.
+2. Open `%LOCALAPPDATA%` in Explorer.
+3. Delete only the `MultiBloxy` folder if you no longer need its settings or logs.
 
-5. **Log In to the New Account**:
-   - Enter the credentials for your second account and log in.
+Deleting that folder permanently removes the local settings and diagnostic logs.
+It does not uninstall Roblox or delete Roblox accounts.
 
-**Repeat the Process**:
-- To add more accounts, repeat steps 2-4 for each additional account you plan to use, up to a maximum of 5 accounts.
+## If multiple instances still do not work
 
-**Done!** 🎉
+1. Update Roblox through its official installer.
+2. Exit MultiBloxy and all Roblox processes normally.
+3. Start MultiBloxy as a standard user before Roblox.
+4. Check `%LOCALAPPDATA%\MultiBloxy\logs\MultiBloxy.log`.
+5. Review [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
-With MultiBloxy running, you can launch experiences using your first account. To switch to another account, use the gear icon ⚙️ -> `Switch Accounts` and launch experiences with the second account (and so on for additional accounts).
-
----
-
-### Method №3: Roblox App 🎮
-
-1. **Ensure MultiBloxy is Running**:
-   - Make sure MultiBloxy is open and running before you open the Roblox app.
-
-2. **Open the Roblox App**:
-   - Launch the Roblox application on your computer.
-
-3. **Log Out of Your Current Account**:
-   - If you are already logged in, log out of your Roblox account.
-
-4. **Open a New Roblox Instance**:
-   - You can open a new instance of Roblox using one of the following methods:
-     - **Using the Roblox App**:
-       1. Right-click on the Roblox app icon in the taskbar.
-       2. Select `Roblox Game Client` from the context menu.
-     - **Using MultiBloxy**:
-       1. Go to the [system tray](https://learn.microsoft.com/style-guide/a-z-word-list-term-collections/s/system-tray) (located in the bottom right corner of your screen).
-       2. Right-click on the `MultiBloxy` icon.
-       3. Select `Start New Roblox Instance` from the menu.
-
-5. **Open Multiple Roblox Instances**:
-   - Repeat the process to open as many Roblox instances as you have accounts.
-
-6. **Log In to Each Account**:
-   - In each newly opened Roblox instance, log in to one of your accounts.
-
-**Done!** 🎉
-
-With MultiBloxy running, you can now launch any experiences you want by switching between the different Roblox app windows.
-
----
-
-## ⚠️ Fixing Error 773 in Multi-Account Roblox Sessions
-
-Error 773 typically occurs when using multiple Roblox app instances due to session conflicts during login. To apply the fix below, you’ll first need to know how to create additional Roblox instances.
-
-### 🔄 How to Open a New Roblox Instance
-
-You can launch a new Roblox instance in either of the following ways:
-
-- **Using the Roblox App**:  
-  1. Right-click on the Roblox app icon in the **taskbar**.  
-  2. Select **`Roblox Game Client`** from the context menu.
-
-- **Using MultiBloxy**:  
-  1. Go to the **[system tray](https://learn.microsoft.com/style-guide/a-z-word-list-term-collections/s/system-tray )** (located in the bottom-right corner of your screen).  
-  2. Right-click on the **`MultiBloxy`** icon.  
-  3. Choose **`Start New Roblox Instance`** from the menu.
-
-> 💡 Tip: Repeat this process to open as many instances as you have accounts.
-
-### Step-by-Step Fix:
-
-1. **Create All Desired Roblox Instances**:  
-   Open as many Roblox app instances as the number of accounts you intend to use (e.g., 3 accounts → 3 instances).
-
-2. **Log In to Each Account**:  
-   In each instance, manually log in to the respective Roblox account.
-
-3. **Immediately Log Out from All Instances**:  
-   Before doing anything else (e.g., launching a game), go back to the Roblox app home screen in **every instance** and **log out** of all accounts.
-
-4. **Re-Log In with Intended Mapping**:  
-   - In the **first** instance, log back in with your **first** account.  
-   - In the **second** instance, log in with your **second** account.  
-   - Continue this pattern for all instances and accounts.
-
-5. **Avoid Mid-Session Account Switching**:  
-   Do **not** use the Roblox app’s built-in account switcher after this setup - it can reintroduce the conflict.
-
-> [!IMPORTANT]  
-> If you make a mistake during this process (e.g., launch a game before reassigning accounts correctly), **restart your computer** to clear lingering sessions and reduce the risk of error recurrence.
-
-This workaround ensures each Roblox instance maintains a clean, isolated login session - effectively bypassing the root cause of error 773.
+Do not install unofficial Roblox builds, disable anti-cheat, inject code, or use a
+kernel driver. If the official client intentionally blocks the mechanism, there
+may be no safe project-side fix.
