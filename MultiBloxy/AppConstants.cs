@@ -6,6 +6,7 @@ internal static class AppConstants
 {
     public const string Name = "MultiBloxy";
     public const string RobloxGuardName = "ROBLOX_singletonEvent";
+    public const string RobloxGuardNameAlternate = "ROBLOX_SingletonEvent";
     public const string RobloxProcessName = "RobloxPlayerBeta";
     public const string Homepage = "https://github.com/Zgoly/MultiBloxy";
 

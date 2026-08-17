@@ -5,13 +5,26 @@ internal sealed record GuardAttemptResult(bool Success, string? Error = null);
 internal sealed class RobloxGuardService : IDisposable
 {
     private readonly object _syncRoot = new();
-    private readonly string _guardName;
-    private Mutex? _guard;
+    private readonly string[] _guardNames;
+    private readonly List<Mutex> _guards = [];
 
-    public RobloxGuardService(string guardName)
+    public RobloxGuardService(params string[] guardNames)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(guardName);
-        _guardName = guardName;
+        ArgumentNullException.ThrowIfNull(guardNames);
+
+        if (guardNames.Length == 0)
+        {
+            throw new ArgumentException(
+                "At least one guard name is required.",
+                nameof(guardNames));
+        }
+
+        foreach (string guardName in guardNames)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(guardName);
+        }
+
+        _guardNames = guardNames.ToArray();
     }
 
     public bool IsEnabled
@@ -20,7 +33,7 @@ internal sealed class RobloxGuardService : IDisposable
         {
             lock (_syncRoot)
             {
-                return _guard is not null;
+                return _guards.Count == _guardNames.Length;
             }
         }
     }
@@ -29,24 +42,37 @@ internal sealed class RobloxGuardService : IDisposable
     {
         lock (_syncRoot)
         {
-            if (_guard is not null)
+            if (_guards.Count == _guardNames.Length)
             {
                 return new GuardAttemptResult(Success: true);
             }
 
+            DisableCore();
+
+            List<Mutex> createdGuards = new(_guardNames.Length);
             try
             {
-                _guard = new Mutex(
-                    initiallyOwned: false,
-                    name: _guardName,
-                    createdNew: out _);
+                foreach (string guardName in _guardNames)
+                {
+                    Mutex guard = new(
+                        initiallyOwned: false,
+                        name: guardName,
+                        createdNew: out _);
+                    createdGuards.Add(guard);
+                }
+
+                _guards.AddRange(createdGuards);
                 return new GuardAttemptResult(Success: true);
             }
             catch (Exception exception) when (exception is IOException
                 or UnauthorizedAccessException
                 or WaitHandleCannotBeOpenedException)
             {
-                _guard = null;
+                foreach (Mutex guard in createdGuards)
+                {
+                    guard.Dispose();
+                }
+
                 return new GuardAttemptResult(Success: false, exception.Message);
             }
         }
@@ -56,9 +82,18 @@ internal sealed class RobloxGuardService : IDisposable
     {
         lock (_syncRoot)
         {
-            _guard?.Dispose();
-            _guard = null;
+            DisableCore();
         }
+    }
+
+    private void DisableCore()
+    {
+        foreach (Mutex guard in _guards)
+        {
+            guard.Dispose();
+        }
+
+        _guards.Clear();
     }
 
     public void Dispose() => Disable();

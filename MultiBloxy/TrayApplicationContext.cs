@@ -51,11 +51,14 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _settings = loadResult.Settings.Normalize();
         _localization = localization;
         _logger = logger;
-        _guard = new RobloxGuardService(AppConstants.RobloxGuardName);
+        _guard = new RobloxGuardService(
+            AppConstants.RobloxGuardName,
+            AppConstants.RobloxGuardNameAlternate);
         _processService = new RobloxProcessService(AppConstants.RobloxProcessName);
         _handleCloser = new WindowsHandleCloser(
             AppConstants.RobloxProcessName,
-            AppConstants.RobloxGuardName);
+            AppConstants.RobloxGuardName,
+            AppConstants.RobloxGuardNameAlternate);
         _resources = new ResourceCache();
 
         _contextMenu = new ContextMenuStrip();
