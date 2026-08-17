@@ -15,7 +15,7 @@ public sealed class WindowsHandleCloserTests
         Assert.AreEqual(40, WindowsHandleCloser.ExtendedHandleEntrySize);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("ROBLOX_singletonEvent", true)]
     [DataRow("\\Sessions\\1\\BaseNamedObjects\\ROBLOX_singletonEvent", true)]
     [DataRow("prefixROBLOX_singletonEvent", false)]

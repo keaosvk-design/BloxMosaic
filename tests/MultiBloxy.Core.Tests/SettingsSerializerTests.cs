@@ -42,7 +42,7 @@ public sealed class SettingsSerializerTests
         Assert.AreEqual(MutexRecoveryAction.None, settings.RememberedAction);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("<Config>")]
     [DataRow("<WrongRoot />")]
     [DataRow("<!DOCTYPE Config [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><Config>&xxe;</Config>")]

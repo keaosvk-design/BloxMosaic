@@ -5,7 +5,7 @@ namespace MultiBloxy.Core.Tests;
 [TestClass]
 public sealed class RecoveryPolicyTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Fix")]
     [DataRow("Abort")]
     [DataRow("Retry")]
