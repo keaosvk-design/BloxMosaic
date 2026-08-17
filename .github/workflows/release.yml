@@ -1,0 +1,105 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Test and publish win-x64
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore and audit packages
+        run: dotnet restore MultiBloxy.sln
+
+      - name: Build
+        run: dotnet build MultiBloxy.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test MultiBloxy.sln --configuration Release --no-build
+
+      - name: Publish portable executable
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.ref_type }}" -eq "tag") {
+            "${{ github.ref_name }}".TrimStart("v")
+          } else {
+            "2.0.0-ci.${{ github.run_number }}"
+          }
+
+          $publishDirectory = Join-Path $PWD "dist/windows-x64"
+          New-Item -ItemType Directory -Force -Path $publishDirectory | Out-Null
+
+          dotnet publish MultiBloxy/MultiBloxy.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output $publishDirectory `
+            -p:Version=$version `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:PublishTrimmed=false `
+            -p:DebugType=None `
+            -p:DebugSymbols=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          Copy-Item LICENSE "$publishDirectory/LICENSE.txt"
+          Copy-Item docs/PORTABLE-README.txt "$publishDirectory/README.txt"
+          $hash = (Get-FileHash "$publishDirectory/MultiBloxy.exe" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  MultiBloxy.exe" | Set-Content "$publishDirectory/MultiBloxy.exe.sha256" -Encoding utf8NoBOM
+          [ordered]@{
+            name = "MultiBloxy"
+            version = $version
+            gitCommit = "${{ github.sha }}"
+            targetFramework = "net10.0-windows"
+            runtimeIdentifier = "win-x64"
+            selfContained = $true
+            singleFile = $true
+            sha256 = $hash
+            builtAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+          } | ConvertTo-Json | Set-Content "$publishDirectory/release-manifest.json" -Encoding utf8NoBOM
+
+          $archivePath = Join-Path $PWD "dist/MultiBloxy-$version-win-x64.zip"
+          Compress-Archive -Path "$publishDirectory/*" -DestinationPath $archivePath -Force
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v7
+        with:
+          name: MultiBloxy-win-x64
+          path: |
+            dist/windows-x64/MultiBloxy.exe
+            dist/windows-x64/MultiBloxy.exe.sha256
+            dist/windows-x64/release-manifest.json
+            dist/MultiBloxy-*-win-x64.zip
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $archive = (Get-ChildItem "dist/MultiBloxy-*-win-x64.zip" -File).FullName
+          gh release create "${{ github.ref_name }}" `
+            $archive `
+            "dist/windows-x64/MultiBloxy.exe" `
+            "dist/windows-x64/MultiBloxy.exe.sha256" `
+            "dist/windows-x64/release-manifest.json" `
+            --verify-tag `
+            --generate-notes `
+            --title "MultiBloxy ${{ github.ref_name }}"
