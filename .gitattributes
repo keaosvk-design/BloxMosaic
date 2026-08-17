@@ -1,0 +1,2 @@
+# Keep C# source files LF on every platform
+*.cs text eol=lf
