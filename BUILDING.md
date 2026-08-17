@@ -133,6 +133,8 @@ MULTIBLOXY_VERSION=2.0.1 bash scripts/publish-windows.sh
 
 The `.exe` is self-contained and single-file. It includes the .NET runtime but
 still runs only on Windows x64. Copy the output to Windows and test it there.
+When publishing from a source archive without Git metadata, the manifest records
+`gitCommit` as `unknown`; a normal clone records the exact source commit.
 
 ## Build and run on Windows
 

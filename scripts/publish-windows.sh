@@ -39,7 +39,11 @@ cp docs/PORTABLE-README.txt "${output_directory}/README.txt"
 
 cd "${output_directory}"
 hash_value="$(sha256sum MultiBloxy.exe | awk '{print $1}')"
-git_commit="$(git -C "${repository_root}" rev-parse --verify HEAD)"
+if git -C "${repository_root}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git_commit="$(git -C "${repository_root}" rev-parse --verify HEAD)"
+else
+  git_commit="unknown"
+fi
 built_at_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 printf '%s  %s\n' "${hash_value}" "MultiBloxy.exe" > MultiBloxy.exe.sha256
